@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, Eye, EyeOff, Lightbulb, CheckCircle2, XCircle, ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
-import { checkAnswer, sfx, speakGerman } from '../utils/gameUtils';
+import { Volume2, Eye, EyeOff, Lightbulb, CheckCircle2, XCircle, ArrowRight, ArrowLeft, RotateCcw, Sparkles } from 'lucide-react';
+import { checkAnswer, sfx, speakGerman, generateDetailedHint } from '../utils/gameUtils';
 
 export default function FlashCardGame({ 
   card, 
@@ -48,6 +48,8 @@ export default function FlashCardGame({
   const targetAnswer = isGermanQuestion ? card.english : card.german;
   const questionLangLabel = isGermanQuestion ? 'German (Deutsch)' : 'English';
   const targetLangLabel = isGermanQuestion ? 'English Translation' : 'German Translation';
+
+  const detailedHint = generateDetailedHint(card, targetAnswer, isGermanQuestion);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -185,17 +187,103 @@ export default function FlashCardGame({
           )}
 
           {/* Hint Display */}
-          {hintShown && !showAnswer && (
+          {hintShown && !showAnswer && detailedHint && (
             <div style={{
-              background: 'rgba(245, 158, 11, 0.15)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              padding: '0.4rem 0.9rem',
-              borderRadius: '10px',
-              fontSize: '0.85rem',
-              color: '#fde047',
-              marginTop: '0.5rem'
+              marginTop: '0.75rem',
+              padding: '0.85rem 1.1rem',
+              background: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '16px',
+              color: '#fef08a',
+              animation: 'fadeInTabs 0.25s ease-out',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.65rem',
+              textAlign: 'left'
             }}>
-              💡 Hint: {getHint()}
+              {/* Riddle Header & Clue */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <Sparkles size={18} color="#f59e0b" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--de-gold-bright)', display: 'block', marginBottom: '0.2rem' }}>
+                    🧩Clue
+                  </span>
+                  <p style={{ fontSize: '0.9rem', lineHeight: '1.4', color: '#fef3c7', margin: 0 }}>
+                    {detailedHint.riddle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Masked Pattern Box */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                background: 'rgba(0, 0, 0, 0.35)',
+                padding: '0.5rem 0.85rem',
+                borderRadius: '10px',
+                border: '1px solid rgba(245, 158, 11, 0.2)'
+              }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700' }}>Pattern:</span>
+                <span style={{ fontFamily: 'monospace', fontSize: '1.05rem', fontWeight: '800', letterSpacing: '0.12em', color: '#fbbf24' }}>
+                  {detailedHint.maskedWord}
+                </span>
+              </div>
+
+              {/* Clue Badges Row */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginTop: '0.1rem' }}>
+                {/* 1. Word Count Badge (only if > 1 word) */}
+                {detailedHint.isMultiWord && (
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    padding: '0.25rem 0.6rem',
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                    borderRadius: '20px',
+                    color: '#fca5a5',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    📝 {detailedHint.wordCount} words
+                  </span>
+                )}
+
+                {/* 2. Number of Possible Answers Badge */}
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  padding: '0.25rem 0.6rem',
+                  background: 'rgba(16, 185, 129, 0.2)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  borderRadius: '20px',
+                  color: '#6ee7b7',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}>
+                  🎯 {detailedHint.possibleAnswersCount} {detailedHint.possibleAnswersCount === 1 ? 'accepted translation' : 'accepted translations'}
+                </span>
+
+                {/* 3. Article / Gender Badge (if applicable) */}
+                {detailedHint.articleInfo && (
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    padding: '0.25rem 0.6rem',
+                    background: 'rgba(59, 130, 246, 0.2)',
+                    border: '1px solid rgba(59, 130, 246, 0.4)',
+                    borderRadius: '20px',
+                    color: '#93c5fd',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    📌 {detailedHint.articleInfo.label}
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
